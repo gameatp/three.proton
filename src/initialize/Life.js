@@ -18,6 +18,9 @@
 
 
     Proton.Util.inherits(Life, Proton.Initialize);
+    Life.prototype.reset = function(a, b, c) {
+        this.lifePan = Proton.createSpan(a, b, c);
+    };
     Life.prototype.initialize = function(target) {
         if (this.lifePan.a == Infinity || this.lifePan.a == "infi")
             target.life = Infinity;

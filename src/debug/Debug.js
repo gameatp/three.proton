@@ -10,7 +10,7 @@
             var geometry, material, mesh;
 
             if (zone instanceof Proton.PointZone) {
-                geometry = new THREE.SphereGeometry(15);
+                geometry = new THREE.SphereGeometry(1);
             } else if (zone instanceof Proton.LineZone) {
 
             } else if (zone instanceof Proton.BoxZone) {
@@ -33,6 +33,7 @@
             this.addEventListener(proton, function(e) {
                 mesh.position.set(zone.x, zone.y, zone.z);
             });
+            return mesh;
         },
 
         drawEmitter: function(proton, container, emitter, color) {

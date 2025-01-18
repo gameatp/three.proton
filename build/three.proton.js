@@ -2,7 +2,7 @@
  * three.proton v0.2.0
  * https://github.com/drawcall/three.proton
  *
- * Copyright 2011-2020, ajiemath
+ * Copyright 2011-2025, ajiemath
  * Licensed under the MIT license
  * http://www.opensource.org/licenses/mit-license
  *
@@ -1643,6 +1643,9 @@
 
 
     Proton.Util.inherits(Life, Proton.Initialize);
+    Life.prototype.reset = function(a, b, c) {
+        this.lifePan = Proton.createSpan(a, b, c);
+    };
     Life.prototype.initialize = function(target) {
         if (this.lifePan.a == Infinity || this.lifePan.a == "infi")
             target.life = Infinity;
@@ -1685,15 +1688,23 @@
         this.zones = this.zones.concat(args);
     };
 
+    Position.prototype.removeZone = function(z) {
+        var index = this.zones.indexOf(z);
+        if (index > -1) this.zones.splice(index, 1);
+    };
+
     Position.prototype.initialize = function() {
         var zone;
         return function(target) {
             var zone = this.zones[(Math.random() * this.zones.length) >> 0];
-            zone.getPosition();
+            if (zone) {
+                zone.getPosition();
 
-            target.p.x = zone.vector.x;
-            target.p.y = zone.vector.y;
-            target.p.z = zone.vector.z;
+                target.p.x = zone.vector.x;
+                target.p.y = zone.vector.y;
+                target.p.z = zone.vector.z;
+            }
+
         }
     }();
 
@@ -1801,6 +1812,9 @@
 
 
     Proton.Util.inherits(Mass, Proton.Initialize);
+    Mass.prototype.reset = function(a, b, c) {
+        this.massPan = Proton.createSpan(a, b, c);
+    };
     Mass.prototype.initialize = function(target) {
         target.mass = this.massPan.getValue();
     };
@@ -2477,6 +2491,19 @@
         while (i--) this.particles[i].dead = true;
     };
 
+    Emitter.prototype.destroyAllParticles = function() {
+       var i = this.particles.length;
+       while (i--) {
+        this.particles[i].dead = true;
+        for (var n = 0; n < this.parent.renderers.length; n++) {
+            this.parent.renderers[n].container.remove(this.particles[i].target);
+        }
+        this.particles[i].destroy();
+       }
+       this.particles.length = 0;
+        
+    };
+
     /**
      * create single particle;
      * 
@@ -3016,6 +3043,10 @@
 
     MeshRender.prototype.onProtonUpdate = function() {};
 
+    MeshRender.prototype.destroyPool = function() {
+        this._targetPool.destroy();
+        this._materialPool.destroy();
+    }
     MeshRender.prototype.onParticleCreated = function(particle) {
         if (!particle.target) {
             //set target
@@ -3235,6 +3266,7 @@
             this.y2 = y2;
             this.z2 = z2;
         }
+        this.type = "line";
     }
 
 
@@ -3246,7 +3278,22 @@
         this.vector.z = this.z1 + this.random * (this.z2 - this.z1);
         return this.vector;
     }
-
+    LineZone.prototype.fromJson = function(json) {
+        this.x1 = json.positionStart[0];
+        this.y1 = json.positionStart[1];
+        this.z1 = json.positionStart[2];
+        this.x2 = json.positionEnd[0];
+        this.y2 = json.positionEnd[1];
+        this.z2 = json.positionEnd[2];
+        return this;
+    }
+    LineZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            positionStart: [this.x1, this.y1, this.z1],
+            positionEnd: [this.x2, this.y2, this.z2]
+        }
+    }
     LineZone.prototype.crossing = function(particle) {
         if (this.log) {
             console.error('Sorry LineZone does not support crossing method');
@@ -3288,6 +3335,7 @@
         this.z = x;
         this.radius = r;
         this.tha = this.phi = 0;
+        this.type = "sphere";
     }
 
     Proton.Util.inherits(SphereZone, Proton.Zone);
@@ -3307,7 +3355,20 @@
             return this.vector;
         }
     }();
-
+    SphereZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        this.radius = json.radius;
+        return this;
+    }
+    SphereZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+            radius: this.radius
+        }
+    }
     SphereZone.prototype._dead = function(particle) {
         var d = particle.p.distanceTo(this);
         if (d - particle.radius > this.radius) particle.dead = true;
@@ -3413,6 +3474,7 @@
         this.x = x;
         this.y = y;
         this.z = z;
+        this.type = "point"
     }
 
     Proton.Util.inherits(PointZone, Proton.Zone);
@@ -3422,7 +3484,18 @@
         this.vector.z = this.z;
         return this.vector;
     }
-
+    PointZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        return this;
+    }
+    PointZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+        }
+    }
     PointZone.prototype.crossing = function(particle) {
         if (this.log) {
             console.error('Sorry PointZone does not support crossing method');
@@ -3480,6 +3553,7 @@
         //
         this.friction = 0.85;
         this.max = 6;
+        this.type = "box";
     }
 
     Proton.Util.inherits(BoxZone, Proton.Zone);
@@ -3489,7 +3563,24 @@
         this.vector.z = this.z + Proton.MathUtils.randomAToB(-.5, .5) * this.depth;
         return this.vector;
     }
-
+    BoxZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        this.width = json.width;
+        this.height = json.height;
+        this.depth = json.depth;
+        return this;
+    }
+    BoxZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+            width: this.width,
+            height: this.height,
+            depth: this.depth
+        }
+    }
     BoxZone.prototype._dead = function(particle) {
         if (particle.p.x + particle.radius < this.x - this.width / 2)
             particle.dead = true;
@@ -3722,7 +3813,7 @@
             var geometry, material, mesh;
 
             if (zone instanceof Proton.PointZone) {
-                geometry = new THREE.SphereGeometry(15);
+                geometry = new THREE.SphereGeometry(1);
             } else if (zone instanceof Proton.LineZone) {
 
             } else if (zone instanceof Proton.BoxZone) {
@@ -3745,6 +3836,7 @@
             this.addEventListener(proton, function(e) {
                 mesh.position.set(zone.x, zone.y, zone.z);
             });
+            return mesh;
         },
 
         drawEmitter: function(proton, container, emitter, color) {

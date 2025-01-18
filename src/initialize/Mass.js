@@ -18,6 +18,9 @@
 
 
     Proton.Util.inherits(Mass, Proton.Initialize);
+    Mass.prototype.reset = function(a, b, c) {
+        this.massPan = Proton.createSpan(a, b, c);
+    };
     Mass.prototype.initialize = function(target) {
         target.mass = this.massPan.getValue();
     };

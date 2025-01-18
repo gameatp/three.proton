@@ -77,6 +77,19 @@
         while (i--) this.particles[i].dead = true;
     };
 
+    Emitter.prototype.destroyAllParticles = function() {
+       var i = this.particles.length;
+       while (i--) {
+        this.particles[i].dead = true;
+        for (var n = 0; n < this.parent.renderers.length; n++) {
+            this.parent.renderers[n].container.remove(this.particles[i].target);
+        }
+        this.particles[i].destroy();
+       }
+       this.particles.length = 0;
+        
+    };
+
     /**
      * create single particle;
      * 

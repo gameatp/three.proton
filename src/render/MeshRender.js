@@ -18,6 +18,10 @@
 
     MeshRender.prototype.onProtonUpdate = function() {};
 
+    MeshRender.prototype.destroyPool = function() {
+        this._targetPool.destroy();
+        this._materialPool.destroy();
+    }
     MeshRender.prototype.onParticleCreated = function(particle) {
         if (!particle.target) {
             //set target

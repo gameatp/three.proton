@@ -33,6 +33,7 @@
             this.y2 = y2;
             this.z2 = z2;
         }
+        this.type = "line";
     }
 
 
@@ -44,7 +45,22 @@
         this.vector.z = this.z1 + this.random * (this.z2 - this.z1);
         return this.vector;
     }
-
+    LineZone.prototype.fromJson = function(json) {
+        this.x1 = json.positionStart[0];
+        this.y1 = json.positionStart[1];
+        this.z1 = json.positionStart[2];
+        this.x2 = json.positionEnd[0];
+        this.y2 = json.positionEnd[1];
+        this.z2 = json.positionEnd[2];
+        return this;
+    }
+    LineZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            positionStart: [this.x1, this.y1, this.z1],
+            positionEnd: [this.x2, this.y2, this.z2]
+        }
+    }
     LineZone.prototype.crossing = function(particle) {
         if (this.log) {
             console.error('Sorry LineZone does not support crossing method');

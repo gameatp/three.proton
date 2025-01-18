@@ -29,6 +29,7 @@
         this.z = x;
         this.radius = r;
         this.tha = this.phi = 0;
+        this.type = "sphere";
     }
 
     Proton.Util.inherits(SphereZone, Proton.Zone);
@@ -48,7 +49,20 @@
             return this.vector;
         }
     }();
-
+    SphereZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        this.radius = json.radius;
+        return this;
+    }
+    SphereZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+            radius: this.radius
+        }
+    }
     SphereZone.prototype._dead = function(particle) {
         var d = particle.p.distanceTo(this);
         if (d - particle.radius > this.radius) particle.dead = true;

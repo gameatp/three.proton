@@ -45,6 +45,7 @@
         //
         this.friction = 0.85;
         this.max = 6;
+        this.type = "box";
     }
 
     Proton.Util.inherits(BoxZone, Proton.Zone);
@@ -54,7 +55,24 @@
         this.vector.z = this.z + Proton.MathUtils.randomAToB(-.5, .5) * this.depth;
         return this.vector;
     }
-
+    BoxZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        this.width = json.width;
+        this.height = json.height;
+        this.depth = json.depth;
+        return this;
+    }
+    BoxZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+            width: this.width,
+            height: this.height,
+            depth: this.depth
+        }
+    }
     BoxZone.prototype._dead = function(particle) {
         if (particle.p.x + particle.radius < this.x - this.width / 2)
             particle.dead = true;

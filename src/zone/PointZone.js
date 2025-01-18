@@ -26,6 +26,7 @@
         this.x = x;
         this.y = y;
         this.z = z;
+        this.type = "point"
     }
 
     Proton.Util.inherits(PointZone, Proton.Zone);
@@ -35,7 +36,18 @@
         this.vector.z = this.z;
         return this.vector;
     }
-
+    PointZone.prototype.fromJson = function(json) {
+        this.x = json.position[0];
+        this.y = json.position[1];
+        this.z = json.position[2];
+        return this;
+    }
+    PointZone.prototype.toJson = function() {
+        return {
+            type: this.type,
+            position: [this.x, this.y, this.z],
+        }
+    }
     PointZone.prototype.crossing = function(particle) {
         if (this.log) {
             console.error('Sorry PointZone does not support crossing method');

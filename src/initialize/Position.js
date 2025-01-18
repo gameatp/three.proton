@@ -29,15 +29,23 @@
         this.zones = this.zones.concat(args);
     };
 
+    Position.prototype.removeZone = function(z) {
+        var index = this.zones.indexOf(z);
+        if (index > -1) this.zones.splice(index, 1);
+    };
+
     Position.prototype.initialize = function() {
         var zone;
         return function(target) {
             var zone = this.zones[(Math.random() * this.zones.length) >> 0];
-            zone.getPosition();
+            if (zone) {
+                zone.getPosition();
 
-            target.p.x = zone.vector.x;
-            target.p.y = zone.vector.y;
-            target.p.z = zone.vector.z;
+                target.p.x = zone.vector.x;
+                target.p.y = zone.vector.y;
+                target.p.z = zone.vector.z;
+            }
+
         }
     }();
 

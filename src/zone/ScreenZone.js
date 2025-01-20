@@ -98,9 +98,9 @@
         }
 
         if (pos.x + particle.radius < -this.dis) {
-            particle.v.y *= -1;
+            particle.v.x *= -1;
         } else if (pos.x - particle.radius > canvas.width + this.dis) {
-            particle.v.y *= -1;
+            particle.v.x *= -1;
         }
     }
 
